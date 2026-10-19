@@ -334,10 +334,51 @@ ggplot(
 
 Age distributions differ across education categories. Participants with more than a high school education tend to be younger, whereas those with less than a high school education are more concentrated at older ages. Within education categories, the age distributions of men and women are generally similar, although some differences in shape are visible, particularly in the high school equivalent and more than high school groups.
 
+```{r}
+# Calculate total daily activity for each participant
+total_activity =
+  nhanes_data |>
+  group_by(SEQN, sex, age, BMI, education) |>
+  summarize(
+    total_activity = sum(MIMS, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
 
+```{r}
+# Check participant-level total activity data
+dim(total_activity)
 
+total_activity |>
+  slice_head(n = 10)
+```
 
+```{r, message=FALSE}
+# Plot total activity against age by sex and education level
+ggplot(
+  total_activity,
+  aes(
+    x = age,
+    y = total_activity,
+    color = sex
+  )
+) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(
+    se = FALSE,
+    method = "loess"
+  ) +
+  facet_wrap(~ education, ncol = 1) +
+  labs(
+    title = "Total Daily Activity by Age, Sex, and Education Level",
+    x = "Age",
+    y = "Total daily activity",
+    color = "Sex"
+  ) +
+  theme_minimal()
+```
 
+Total daily activity generally decreases with age across all education levels, although the pattern varies somewhat by group. The decline is most apparent among participants with less than a high school education. In the high school equivalent group, women tend to have higher total activity than men through much of middle age, while the difference becomes smaller at older ages. Among participants with more than a high school education, activity levels are relatively stable through early and middle adulthood but decline at older ages. Considerable individual variability is present within each group.
 
 
 
