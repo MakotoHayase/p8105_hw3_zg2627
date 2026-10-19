@@ -380,7 +380,47 @@ ggplot(
 
 Total daily activity generally decreases with age across all education levels, although the pattern varies somewhat by group. The decline is most apparent among participants with less than a high school education. In the high school equivalent group, women tend to have higher total activity than men through much of middle age, while the difference becomes smaller at older ages. Among participants with more than a high school education, activity levels are relatively stable through early and middle adulthood but decline at older ages. Considerable individual variability is present within each group.
 
+```{r}
+# Calculate mean activity at each minute by sex and education level
+activity_timecourse =
+  nhanes_data |>
+  group_by(education, sex, minute) |>
+  summarize(
+    mean_MIMS = mean(MIMS, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
 
+```{r, message=FALSE}
+# Plot 24-hour activity time courses by sex and education level
+ggplot(
+  activity_timecourse,
+  aes(
+    x = minute,
+    y = mean_MIMS,
+    color = sex
+  )
+) +
+  geom_line(alpha = 0.7) +
+  geom_smooth(
+    se = FALSE,
+    span = 0.08
+  ) +
+  facet_wrap(~ education, ncol = 1) +
+  scale_x_continuous(
+    breaks = c(0, 360, 720, 1080, 1440),
+    labels = c("12 AM", "6 AM", "12 PM", "6 PM", "12 AM")
+  ) +
+  labs(
+    title = "24-Hour Activity Patterns by Sex and Education Level",
+    x = "Time of day",
+    y = "Mean MIMS",
+    color = "Sex"
+  ) +
+  theme_minimal()
+```
+
+Across all education levels, activity follows a clear daily pattern: activity is lowest overnight, rises rapidly in the morning, remains relatively high throughout the day, and declines again in the evening. Sex differences are relatively small among participants with less than a high school education. In the high school equivalent and more than high school groups, women tend to have higher mean activity than men during much of the daytime, with the difference appearing most pronounced among participants with more than a high school education.
 
 
 
