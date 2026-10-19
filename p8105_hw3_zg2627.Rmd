@@ -244,13 +244,10 @@ nhanes_accel_tidy =
 ```
 
 ```{r}
-# Clean demographic variables
 nhanes_covar_clean =
   nhanes_covar |>
-  filter(
-    age >= 21,
-    complete.cases(sex, age, BMI, education)
-  ) |>
+  filter(age >= 21) |>
+  drop_na(sex, age, BMI, education) |>
   mutate(
     sex = factor(
       sex,
@@ -266,16 +263,6 @@ nhanes_covar_clean =
         "More than high school"
       )
     )
-  )
-```
-
-```{r}
-# Merge demographic and accelerometer data
-nhanes_data =
-  nhanes_accel_tidy |>
-  inner_join(
-    nhanes_covar_clean,
-    by = "SEQN"
   )
 ```
 
@@ -305,7 +292,12 @@ education_sex_table =
     values_from = n
   )
 
-education_sex_table
+# Create a reader-friendly table
+education_sex_table |>
+  knitr::kable(
+    col.names = c("Education level", "Male", "Female"),
+    caption = "Number of Participants by Education Level and Sex"
+  )
 ```
 
 The largest education category is "More than high school," with similar numbers of men and women. The "High school equivalent" group contains more men than women, while the "Less than high school" group is approximately balanced by sex.
@@ -333,6 +325,10 @@ ggplot(
 ```
 
 Age distributions differ across education categories. Participants with more than a high school education tend to be younger, whereas those with less than a high school education are more concentrated at older ages. Within education categories, the age distributions of men and women are generally similar, although some differences in shape are visible, particularly in the high school equivalent and more than high school groups.
+
+```{r}
+sum(is.na(nhanes_data$MIMS))
+```
 
 ```{r}
 # Calculate total daily activity for each participant
@@ -421,6 +417,125 @@ ggplot(
 ```
 
 Across all education levels, activity follows a clear daily pattern: activity is lowest overnight, rises rapidly in the morning, remains relatively high throughout the day, and declines again in the evening. Sex differences are relatively small among participants with less than a high school education. In the high school equivalent and more than high school groups, women tend to have higher mean activity than men during much of the daytime, with the difference appearing most pronounced among participants with more than a high school education.
+
+
+## Problem 3
+
+```{r, message=FALSE}
+# Import Citi Bike data and add year and month variables
+jan_2020 =
+  read_csv("data/citibike/Jan 2020 Citi.csv.zip") |>
+  mutate(
+    year = 2020,
+    month = "January"
+  )
+
+jan_2024 =
+  read_csv("data/citibike/Jan 2024 Citi.csv.zip") |>
+  mutate(
+    year = 2024,
+    month = "January"
+  )
+
+july_2020 =
+  read_csv("data/citibike/July 2020 Citi.csv.zip") |>
+  mutate(
+    year = 2020,
+    month = "July"
+  )
+
+july_2024 =
+  read_csv("data/citibike/July 2024 Citi.csv.zip") |>
+  mutate(
+    year = 2024,
+    month = "July"
+  )
+```
+
+```{r}
+# Combine all four Citi Bike datasets
+citibike =
+  bind_rows(
+    jan_2020,
+    july_2020,
+    jan_2024,
+    july_2024
+  ) |>
+  rename(
+    weekday = weekdays
+  ) |>
+  mutate(
+    year = factor(
+      year,
+      levels = c(2020, 2024)
+    ),
+    month = factor(
+      month,
+      levels = c("January", "July")
+    ),
+    member_casual = factor(
+      member_casual,
+      levels = c("casual", "member"),
+      labels = c("Casual", "Member")
+    ),
+    rideable_type = factor(rideable_type),
+    weekday = factor(
+      weekday,
+      levels = c(
+        "Monday", "Tuesday", "Wednesday",
+        "Thursday", "Friday", "Saturday", "Sunday"
+      )
+    )
+  )
+```
+
+```{r}
+# Check the cleaned Citi Bike dataset
+dim(citibike)
+
+citibike |>
+  slice_head(n = 10)
+```
+
+```{r}
+citibike |>
+  select(
+    ride_id,
+    rideable_type,
+    weekday,
+    duration,
+    start_station_name,
+    end_station_name,
+    member_casual,
+    year,
+    month
+  ) |>
+  glimpse()
+```
+
+```{r}
+# Check ride duration
+citibike |>
+  summarize(
+    min_duration = min(duration, na.rm = TRUE),
+    median_duration = median(duration, na.rm = TRUE),
+    max_duration = max(duration, na.rm = TRUE)
+  )
+
+# Check missing values
+citibike |>
+  summarize(
+    across(
+      everything(),
+      ~ sum(is.na(.))
+    )
+  )
+```
+
+The cleaned Citi Bike dataset contains 99,485 rides and 9 variables. Each observation represents one ride and includes ride ID, bike type, day of the week, ride duration in minutes, starting and ending station names, membership status, year, and month. The data include rides from January and July in 2020 and 2024.
+
+Ride duration ranges from approximately 1.0 to 238.8 minutes, with a median of about 9.8 minutes. Missing data are limited to station names: 43 rides are missing a starting station name and 207 are missing an ending station name. The remaining variables have no missing values.
+
 
 
 
