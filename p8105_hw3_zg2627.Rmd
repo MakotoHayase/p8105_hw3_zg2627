@@ -270,6 +270,14 @@ nhanes_covar_clean =
 # Check the cleaned and merged data
 dim(nhanes_covar_clean)
 
+# Merge demographic and accelerometer data
+nhanes_data =
+  nhanes_accel_tidy |>
+  inner_join(
+    nhanes_covar_clean,
+    by = "SEQN"
+  )
+
 nhanes_data |>
   select(SEQN, minute, MIMS, sex, age, BMI, education) |>
   slice_head(n = 10)
@@ -277,7 +285,10 @@ dim(nhanes_data)
 ```
 
 ```{r}
-n_distinct(nhanes_data$SEQN)
+nhanes_data |>
+  summarize(
+    n_participants = n_distinct(SEQN)
+  )
 ```
 
 After excluding participants younger than 21 years and those with missing demographic information, 228 participants remained. The accelerometer data were converted to long format with one observation per participant-minute, resulting in 328,320 observations.
@@ -327,7 +338,10 @@ ggplot(
 Age distributions differ across education categories. Participants with more than a high school education tend to be younger, whereas those with less than a high school education are more concentrated at older ages. Within education categories, the age distributions of men and women are generally similar, although some differences in shape are visible, particularly in the high school equivalent and more than high school groups.
 
 ```{r}
-sum(is.na(nhanes_data$MIMS))
+nhanes_data |>
+  summarize(
+    n_missing_MIMS = sum(is.na(MIMS))
+  )
 ```
 
 ```{r}
