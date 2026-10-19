@@ -201,4 +201,99 @@ Maximum and minimum temperatures show a strong positive relationship, with most 
 Across years, positive snowfall amounts below 100 mm are concentrated in the smaller snowfall bins, while larger snowfall amounts occur much less frequently. This pattern is fairly consistent across years, although some year-to-year variation is present.
 
 
+## Problem 2
+
+```{r, message=FALSE}
+# Load demographic data
+nhanes_covar =
+  read_csv(
+    "data/nhanes_covar.csv",
+    skip = 4
+  )
+
+# Load accelerometer data
+nhanes_accel =
+  read_csv("data/nhanes_accel.csv")
+```
+
+```{r}
+# Check dimensions and variable structure
+dim(nhanes_covar)
+glimpse(nhanes_covar)
+
+# Check accelerometer dimensions and selected variables
+dim(nhanes_accel)
+
+nhanes_accel |>
+  select(SEQN, min1:min5, min1436:min1440) |>
+  glimpse()
+```
+
+```{r}
+# Tidy accelerometer data into long format
+nhanes_accel_tidy =
+  nhanes_accel |>
+  pivot_longer(
+    cols = starts_with("min"),
+    names_to = "minute",
+    values_to = "MIMS"
+  ) |>
+  mutate(
+    minute = as.numeric(str_remove(minute, "min"))
+  )
+```
+
+```{r}
+# Clean demographic variables
+nhanes_covar_clean =
+  nhanes_covar |>
+  filter(
+    age >= 21,
+    complete.cases(sex, age, BMI, education)
+  ) |>
+  mutate(
+    sex = factor(
+      sex,
+      levels = c(1, 2),
+      labels = c("Male", "Female")
+    ),
+    education = factor(
+      education,
+      levels = c(1, 2, 3),
+      labels = c(
+        "Less than high school",
+        "High school equivalent",
+        "More than high school"
+      )
+    )
+  )
+```
+
+```{r}
+# Merge demographic and accelerometer data
+nhanes_data =
+  nhanes_accel_tidy |>
+  inner_join(
+    nhanes_covar_clean,
+    by = "SEQN"
+  )
+```
+
+```{r}
+# Check the cleaned and merged data
+dim(nhanes_covar_clean)
+
+nhanes_data |>
+  select(SEQN, minute, MIMS, sex, age, BMI, education) |>
+  slice_head(n = 10)
+dim(nhanes_data)
+```
+
+```{r}
+n_distinct(nhanes_data$SEQN)
+```
+
+After excluding participants younger than 21 years and those with missing demographic information, 228 participants remained. The accelerometer data were converted to long format with one observation per participant-minute, resulting in 328,320 observations.
+
+
 
