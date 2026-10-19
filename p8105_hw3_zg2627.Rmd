@@ -556,6 +556,34 @@ ride_count_table |>
 
 Citi Bike members account for the majority of rides in every year-month combination. Ride volume is substantially higher in July than in January in both years, suggesting a strong seasonal pattern. Overall ridership is also higher in 2024 than in 2020, with the largest increase occurring in July. Casual ridership shows particularly strong seasonality, increasing sharply from January to July in both years.
 
+```{r}
+# Identify the 5 most popular starting stations in July 2024
+top_stations =
+  citibike |>
+  filter(
+    year == 2024,
+    month == "July",
+    !is.na(start_station_name)
+  ) |>
+  count(
+    start_station_name,
+    sort = TRUE
+  ) |>
+  slice_head(n = 5)
+
+# Create a reader-friendly table
+top_stations |>
+  knitr::kable(
+    col.names = c("Starting station", "Number of rides"),
+    caption = "Five Most Popular Citi Bike Starting Stations in July 2024"
+  )
+```
+
+In July 2024, Pier 61 at Chelsea Piers was the most popular starting station among the sampled rides, followed by University Pl & E 14 St and W 21 St & 6 Ave.
+
+```{r}
+
+```
 
 
 
