@@ -17,7 +17,7 @@ library(p8105.datasets)
 
 data("ny_noaa")
 
-# Check dapa shape and structure
+# Check data shape and structure
 dim(ny_noaa)
 glimpse(ny_noaa)
 ```
@@ -146,22 +146,10 @@ temp_plot =
     fill = "Count"
   ) +
   theme_minimal()
-
-temp_plot
 ```
 
-Maximum and minimum temperatures show a strong positive relationship, with most observations concentrated along an upward-sloping band. Most daily maximum temperatures are higher than the corresponding minimum temperatures, as expected. A small number of extreme observations appear far from the main distribution and may reflect unusual or erroneous measurements.
-
 ```{r}
-# Keep positive snowfall values below 100 mm
-snow_plot_data =
-  ny_noaa_clean |>
-  filter(
-    snow > 0,
-    snow < 100
-  )
-
-# Summarize snowfall distributions within each year
+# Keep positive snowfall values below 100 mm and summarize snowfall distributions within each year
 snow_plot_data =
   ny_noaa_clean |>
   filter(
@@ -200,13 +188,17 @@ snow_plot =
     fill = "Within-year proportion"
   ) +
   theme_minimal()
-
-snow_plot
 ```
 
-Across years, positive snowfall amounts below 100 mm are strongly concentrated at smaller values. Larger snowfall amounts occur much less frequently, indicating a strongly right-skewed distribution. This general pattern is fairly consistent across years, although some year-to-year variation is present.
+```{r, fig.width=12, fig.height=15}
+# Create two-panel plot
+library(patchwork)
+temp_plot / snow_plot
+```
 
+Maximum and minimum temperatures show a strong positive relationship, with most observations concentrated along an upward-sloping band. Most daily maximum temperatures are higher than the corresponding minimum temperatures, as expected. A small number of extreme observations appear far from the main distribution and may reflect unusual or erroneous measurements.
 
+Across years, positive snowfall amounts below 100 mm are concentrated in the smaller snowfall bins, while larger snowfall amounts occur much less frequently. This pattern is fairly consistent across years, although some year-to-year variation is present.
 
 
 
