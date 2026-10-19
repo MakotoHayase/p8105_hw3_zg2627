@@ -124,3 +124,89 @@ ggplot(
   theme_minimal()
 ```
 Average maximum temperatures are substantially lower and more variable in January than in July. January station-level averages are generally centered near 0°C, while July averages are mostly in the mid-to-upper 20s °C. There is substantial year-to-year variation, especially in January, but no strong monotonic temporal trend is immediately apparent. A few unusually low station-year averages appear in both months and may represent outliers or stations with unusual local conditions.
+
+```{r}
+# Plot the joint distribution of maximum and minimum temperatures
+temp_plot =
+  ny_noaa_clean |>
+  filter(
+    !is.na(tmax),
+    !is.na(tmin)
+  ) |>
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_bin_2d(bins = 40) +
+  scale_fill_gradient(
+    low = "blue1",
+    high = "blue4"
+  ) +
+  labs(
+    title = "Maximum vs Minimum Temperature",
+    x = "Minimum temperature (°C)",
+    y = "Maximum temperature (°C)",
+    fill = "Count"
+  ) +
+  theme_minimal()
+
+temp_plot
+```
+
+Maximum and minimum temperatures show a strong positive relationship, with most observations concentrated along an upward-sloping band. Most daily maximum temperatures are higher than the corresponding minimum temperatures, as expected. A small number of extreme observations appear far from the main distribution and may reflect unusual or erroneous measurements.
+
+```{r}
+# Keep positive snowfall values below 100 mm
+snow_plot_data =
+  ny_noaa_clean |>
+  filter(
+    snow > 0,
+    snow < 100
+  )
+
+# Summarize snowfall distributions within each year
+snow_plot_data =
+  ny_noaa_clean |>
+  filter(
+    snow > 0,
+    snow < 100
+  ) |>
+  mutate(
+    snow_bin = floor(snow / 5) * 5
+  ) |>
+  count(year, snow_bin) |>
+  group_by(year) |>
+  mutate(
+    proportion = n / sum(n)
+  ) |>
+  ungroup()
+
+# Plot snowfall distributions separately by year
+snow_plot =
+  snow_plot_data |>
+  ggplot(
+    aes(
+      x = snow_bin,
+      y = factor(year),
+      fill = proportion
+    )
+  ) +
+  geom_tile() +
+  scale_fill_gradient(
+    low = "skyblue1",
+    high = "skyblue4"
+  ) +
+  labs(
+    title = "Distribution of Snowfall by Year",
+    x = "Snowfall (mm; 5-mm bins)",
+    y = "Year",
+    fill = "Within-year proportion"
+  ) +
+  theme_minimal()
+
+snow_plot
+```
+
+Across years, positive snowfall amounts below 100 mm are strongly concentrated at smaller values. Larger snowfall amounts occur much less frequently, indicating a strongly right-skewed distribution. This general pattern is fairly consistent across years, although some year-to-year variation is present.
+
+
+
+
+
