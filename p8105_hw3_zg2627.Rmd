@@ -536,6 +536,26 @@ The cleaned Citi Bike dataset contains 99,485 rides and 9 variables. Each observ
 
 Ride duration ranges from approximately 1.0 to 238.8 minutes, with a median of about 9.8 minutes. Missing data are limited to station names: 43 rides are missing a starting station name and 207 are missing an ending station name. The remaining variables have no missing values.
 
+```{r}
+# Count rides by year, month, and membership status
+ride_count_table =
+  citibike |>
+  count(year, month, member_casual) |>
+  pivot_wider(
+    names_from = member_casual,
+    values_from = n
+  )
+
+# Create a reader-friendly table
+ride_count_table |>
+  knitr::kable(
+    col.names = c("Year", "Month", "Casual", "Member"),
+    caption = "Number of Citi Bike Rides by Year, Month, and Membership Status"
+  )
+```
+
+Citi Bike members account for the majority of rides in every year-month combination. Ride volume is substantially higher in July than in January in both years, suggesting a strong seasonal pattern. Overall ridership is also higher in 2024 than in 2020, with the largest increase occurring in July. Casual ridership shows particularly strong seasonality, increasing sharply from January to July in both years.
+
 
 
 
