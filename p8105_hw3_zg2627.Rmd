@@ -85,3 +85,42 @@ ny_noaa_clean |>
 
 The most commonly observed snowfall value is 0 mm, with 2,008,508 observations. This is expected because snowfall occurs only on a relatively small number of days, so zero snowfall is much more common than any positive amount. Among nonzero values, small snowfall amounts such as 2.5 mm, 1.3 mm, and 5.1 mm are observed relatively frequently, which is consistent with light snowfall events being more common than heavy snowfall.
 
+```{r}
+# Calculate average maximum temperature in January and July
+
+jan_jul_temp =
+  ny_noaa_clean |>
+  filter(month %in% c(1, 7)) |>
+  group_by(id, year, month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  filter(!is.nan(mean_tmax))
+
+# Label the month
+jan_jul_temp =
+  jan_jul_temp |>
+  mutate(
+    month = factor(
+      month,
+      levels = c(1, 7),
+      labels = c("January", "July")
+    )
+  )
+
+# Plot average maximum temperature by station across years
+ggplot(
+  jan_jul_temp,
+  aes(x = year, y = mean_tmax, group = id)
+) +
+  geom_line(alpha = 0.15) +
+  facet_wrap(~ month, ncol = 2) +
+  labs(
+    title = "Average January and July Maximum Temperatures by Station",
+    x = "Year",
+    y = "Average maximum temperature (°C)"
+  ) +
+  theme_minimal()
+```
+Average maximum temperatures are substantially lower and more variable in January than in July. January station-level averages are generally centered near 0°C, while July averages are mostly in the mid-to-upper 20s °C. There is substantial year-to-year variation, especially in January, but no strong monotonic temporal trend is immediately apparent. A few unusually low station-year averages appear in both months and may represent outliers or stations with unusual local conditions.
