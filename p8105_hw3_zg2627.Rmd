@@ -1,0 +1,42 @@
+---
+title: "p8105_hw3_zg2627"
+author: "Zimu Guan"
+date: "2026-10-19"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem 1
+
+```{r}
+library(tidyverse)
+library(p8105.datasets)
+
+data("ny_noaa")
+
+dim(ny_noaa)
+glimpse(ny_noaa)
+```
+
+```{r}
+ny_noaa |>
+  summarize(
+    across(
+      everything(),
+      ~ mean(is.na(.))
+    )
+  ) |>
+  pivot_longer(
+    everything(),
+    names_to = "variable",
+    values_to = "proportion_missing"
+  ) |>
+  arrange(desc(proportion_missing))
+```
+
+The `ny_noaa` dataset contains 2,595,176 observations and 7 variables. Each row represents a daily weather observation from a NOAA weather station in New York State. Key variables include station ID (`id`), date (`date`), precipitation (`prcp`), snowfall (`snow`), snow depth (`snwd`), maximum temperature (`tmax`), and minimum temperature (`tmin`). The `date` variable is stored as a date, while `prcp`, `snow`, and `snwd` are stored as integers; `tmax` and `tmin` are currently stored as character variables and will require cleaning before analysis.
+
+Missing data are a substantial issue in this dataset. Approximately 43.7% of observations are missing for both `tmin` and `tmax`, while 22.8% are missing for `snwd`, 14.7% for `snow`, and 5.6% for `prcp`. The station ID and date variables have no missing values.
