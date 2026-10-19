@@ -582,8 +582,46 @@ top_stations |>
 In July 2024, Pier 61 at Chelsea Piers was the most popular starting station among the sampled rides, followed by University Pl & E 14 St and W 21 St & 6 Ave.
 
 ```{r}
-
+# Calculate median ride duration by year, month, and weekday
+median_duration =
+  citibike |>
+  group_by(year, month, weekday) |>
+  summarize(
+    median_duration = median(duration, na.rm = TRUE),
+    .groups = "drop"
+  )
 ```
+
+```{r}
+# Plot median ride duration by weekday, month, and year
+ggplot(
+  median_duration,
+  aes(
+    x = weekday,
+    y = median_duration,
+    color = year,
+    group = year
+  )
+) +
+  geom_point(size = 2) +
+  geom_line() +
+  facet_wrap(~ month, ncol = 2) +
+  labs(
+    title = "Median Ride Duration by Weekday, Month, and Year",
+    x = "Day of the week",
+    y = "Median ride duration (minutes)",
+    color = "Year"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+```
+
+Median ride duration is generally longer in July than in January and is consistently higher in 2020 than in 2024. Weekend rides tend to have longer median durations than weekday rides, particularly in July. This weekend increase is especially pronounced in 2020, while the weekday pattern is flatter in January and more modest in 2024.
 
 
 
