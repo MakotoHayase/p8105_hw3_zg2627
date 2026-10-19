@@ -17,11 +17,13 @@ library(p8105.datasets)
 
 data("ny_noaa")
 
+# Check dapa shape and structure
 dim(ny_noaa)
 glimpse(ny_noaa)
 ```
 
 ```{r}
+# Check NA proportion of each variable
 ny_noaa |>
   summarize(
     across(
@@ -40,3 +42,46 @@ ny_noaa |>
 The `ny_noaa` dataset contains 2,595,176 observations and 7 variables. Each row represents a daily weather observation from a NOAA weather station in New York State. Key variables include station ID (`id`), date (`date`), precipitation (`prcp`), snowfall (`snow`), snow depth (`snwd`), maximum temperature (`tmax`), and minimum temperature (`tmin`). The `date` variable is stored as a date, while `prcp`, `snow`, and `snwd` are stored as integers; `tmax` and `tmin` are currently stored as character variables and will require cleaning before analysis.
 
 Missing data are a substantial issue in this dataset. Approximately 43.7% of observations are missing for both `tmin` and `tmax`, while 22.8% are missing for `snwd`, 14.7% for `snow`, and 5.6% for `prcp`. The station ID and date variables have no missing values.
+
+```{r}
+# Clean the NY NOAA data and create separate date variables
+ny_noaa_clean =
+  ny_noaa |>
+  mutate(
+    # Extract year, month, and day from the date variable
+    year = lubridate::year(date),
+    month = lubridate::month(date),
+    day = lubridate::day(date),
+
+    # Convert temperature variables to degrees Celsius
+    tmax = as.numeric(tmax) / 10,
+    tmin = as.numeric(tmin) / 10,
+
+    # Convert precipitation, snowfall, and snow depth to millimeters
+    prcp = prcp / 10,
+    snow = snow / 10,
+    snwd = snwd / 10
+  )
+
+# Check the structure of the cleaned dataset
+glimpse(ny_noaa_clean)
+```
+
+I first cleaned the dataset by separating the date into year, month, and day variables and converting the weather measurements into more interpretable units.
+
+```{r}
+# Summarize the cleaned weather variables
+ny_noaa_clean |>
+  select(tmax, tmin, prcp, snow, snwd) |>
+  summary()
+```
+
+```{r}
+# Identify the most commonly observed snowfall values
+ny_noaa_clean |>
+  count(snow, sort = TRUE) |>
+  slice_head(n = 10)
+```
+
+The most commonly observed snowfall value is 0 mm, with 2,008,508 observations. This is expected because snowfall occurs only on a relatively small number of days, so zero snowfall is much more common than any positive amount. Among nonzero values, small snowfall amounts such as 2.5 mm, 1.3 mm, and 5.1 mm are observed relatively frequently, which is consistent with light snowfall events being more common than heavy snowfall.
+
