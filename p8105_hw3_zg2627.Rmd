@@ -295,5 +295,52 @@ n_distinct(nhanes_data$SEQN)
 
 After excluding participants younger than 21 years and those with missing demographic information, 228 participants remained. The accelerometer data were converted to long format with one observation per participant-minute, resulting in 328,320 observations.
 
+```{r}
+# Count participants by education level and sex
+education_sex_table =
+  nhanes_covar_clean |>
+  count(education, sex) |>
+  pivot_wider(
+    names_from = sex,
+    values_from = n
+  )
+
+education_sex_table
+```
+
+The largest education category is "More than high school," with similar numbers of men and women. The "High school equivalent" group contains more men than women, while the "Less than high school" group is approximately balanced by sex.
+
+```{r}
+# Plot age distributions by sex and education level
+ggplot(
+  nhanes_covar_clean,
+  aes(
+    x = age,
+    fill = sex,
+    color = sex
+  )
+) +
+  geom_density(alpha = 0.3) +
+  facet_wrap(~ education, ncol = 1) +
+  labs(
+    title = "Age Distribution by Sex and Education Level",
+    x = "Age",
+    y = "Density",
+    fill = "Sex",
+    color = "Sex"
+  ) +
+  theme_minimal()
+```
+
+Age distributions differ across education categories. Participants with more than a high school education tend to be younger, whereas those with less than a high school education are more concentrated at older ages. Within education categories, the age distributions of men and women are generally similar, although some differences in shape are visible, particularly in the high school equivalent and more than high school groups.
+
+
+
+
+
+
+
+
+
 
 
